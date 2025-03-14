@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Interactivo de Redis</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+
+        .code-block {
+            background-color: #1a1a1a;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+
+        .transition-card {
+            transition: all 0.3s ease;
+        }
+
+        .transition-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 min-h-screen">
+    <!-- Header -->
+    <header class="bg-gray-800 shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <img src="https://static-00.iconduck.com/assets.00/redis-icon-512x411-rwcs4kdh.png" alt="Redis Logo" class="h-10 mr-4">
+                <h1 class="text-2xl font-bold text-pink-500">Redis Dashboard</h1>
+            </div>
+            <div class="text-gray-400 text-sm hidden md:block">
+                Base de datos en memoria, caché y broker de mensajes
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <!-- Navigation Tabs -->
+        <div class="flex flex-wrap mb-6 border-b border-gray-700">
+            <button onclick="changeTab('intro')" id="tab-intro" class="tab-btn px-4 py-2 text-pink-500 border-b-2 border-pink-500 font-medium">Introducción</button>
+            <button onclick="changeTab('estructuras')" id="tab-estructuras" class="tab-btn px-4 py-2 text-gray-400 hover:text-pink-400 font-medium">Estructuras de Datos</button>
+            <button onclick="changeTab('casos')" id="tab-casos" class="tab-btn px-4 py-2 text-gray-400 hover:text-pink-400 font-medium">Casos de Uso</button>
+            <button onclick="changeTab('persistencia')" id="tab-persistencia" class="tab-btn px-4 py-2 text-gray-400 hover:text-pink-400 font-medium">Persistencia</button>
+            <button onclick="changeTab('replicacion')" id="tab-replicacion" class="tab-btn px-4 py-2 text-gray-400 hover:text-pink-400 font-medium">Replicación</button>
+            <button onclick="changeTab('cluster')" id="tab-cluster" class="tab-btn px-4 py-2 text-gray-400 hover:text-pink-400 font-medium">Cluster</button>
+            <button onclick="changeTab('seguridad')" id="tab-seguridad" class="tab-btn px-4 py-2 text-gray-400 hover:text-pink-400 font-medium">Seguridad</button>
+        </div>
+
+        <!-- Content Sections -->
+        <div id="content-container">
+            <!-- Introducción Section -->
+            <div id="intro" class="tab-content">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-green-400 mb-4">¿Qué es Redis?</h2>
+                    <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                        <p class="mb-4">Redis es un almacén de estructuras de datos en memoria de código abierto utilizado como base de datos, caché y broker de mensajes.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                            <div>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-pink-500 mt-1 mr-2"></i>
+                                        <span>Admite una amplia gama de estructuras de datos, como cadenas, hashes, listas, conjuntos y más.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-pink-500 mt-1 mr-2"></i>
+                                        <span>Redis es conocido por su alto rendimiento, escalabilidad y simplicidad.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-pink-500 mt-1 mr-2"></i>
+                                        <span>Redis puede proporcionar un rendimiento extremadamente rápido al almacenar toda su base de datos en memoria.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="flex justify-center items-center">
+                                <img src="https://static-00.iconduck.com/assets.00/redis-icon-512x411-rwcs4kdh.png" alt="Redis Overview" class="h-32">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-3xl font-bold text-green-400 mb-4">Características clave</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-gray-800 rounded-lg shadow-lg p-5 transition-card">
+                            <div class="text-pink-500 text-xl mb-2">
+                                <i class="fas fa-bolt mr-2"></i>Almacenamiento en memoria
+                            </div>
+                            <p class="text-gray-300 text-sm">Redis almacena los datos en RAM, lo que permite operaciones de lectura y escritura extremadamente rápidas.</p>
+                        </div>
+                        <div class="bg-gray-800 rounded-lg shadow-lg p-5 transition-card">
+                            <div class="text-pink-500 text-xl mb-2">
+                                <i class="fas fa-layer-group mr-2"></i>Estructuras de datos
+                            </div>
+                            <p class="text-gray-300 text-sm">Redis proporciona un rico conjunto de estructuras de datos para manejar diversos casos de uso de manera eficiente.</p>
+                        </div>
+                        <div class="bg-gray-800 rounded-lg shadow-lg p-5 transition-card">
+                            <div class="text-pink-500 text-xl mb-2">
+                                <i class="fas fa-database mr-2"></i>Persistencia
+                            </div>
+                            <p class="text-gray-300 text-sm">Redis puede persistir los datos en disco, asegurando la durabilidad de los datos a través de reinicios del servidor.</p>
+                        </div>
+                        <div class="bg-gray-800 rounded-lg shadow-lg p-5 transition-card">
+                            <div class="text-pink-500 text-xl mb-2">
+                                <i class="fas fa-sync-alt mr-2"></i>Replicación
+                            </div>
+                            <p class="text-gray-300 text-sm">Redis admite la replicación maestro-esclavo y proporciona alta disponibilidad a través de Redis Sentinel.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estructuras de Datos Section -->
+            <div id="estructuras" class="tab-content hidden">
+                <h2 class="text-3xl font-bold text-green-400 mb-6">Estructuras de Datos de Redis</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Strings Card -->
+                    <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                        <div class="bg-pink-900 bg-opacity-30 px-4 py-3">
+                            <h3 class="text-xl font-bold text-pink-500">Cadenas (Strings)</h3>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1">
+                                    <ul class="space-y-1 mb-4">
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Las cadenas son el tipo de dato más básico en Redis.</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Pueden almacenar cualquier tipo de dato: texto, números o datos binarios.</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Redis proporciona comandos para manipular cadenas, con operaciones atómicas.</span>
+                                        </li>
+                                    </ul>
+                                    <div class="code-block text-sm text-green-300">
+                                        # Ejemplos de uso<br>
+                                        SET usuario:1:nombre "Juan"<br>
+                                        GET usuario:1:nombre<br>
+                                        INCR contador<br>
+                                        EXPIRE clave 60 # expira en 60s
+                                    </div>
+                                </div>
+                   
+                            </div>
+                            <div class="mt-4 bg-gray-900 p-3 rounded text-sm">
+                                <p class="font-bold text-pink-400">Casos de uso:</p>
+                                <p>Contadores, sesiones, almacenamiento de caché, semáforos, límite de ratio...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lists Card -->
+                    <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                        <div class="bg-pink-900 bg-opacity-30 px-4 py-3">
+                            <h3 class="text-xl font-bold text-pink-500">Listas (Lists)</h3>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1">
+                                    <ul class="space-y-1 mb-4">
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Las listas en Redis son colecciones ordenadas de cadenas.</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Se pueden utilizar para implementar colas, pilas o colas de mensajes.</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Acceso por índice y operaciones en ambos extremos.</span>
+                                        </li>
+                                    </ul>
+                                    <div class="code-block text-sm text-green-300">
+                                        # Ejemplos de uso<br>
+                                        LPUSH lista valor # añade al inicio<br>
+                                        RPUSH lista valor # añade al final<br>
+                                        LPOP lista # retira y devuelve del inicio<br>
+                                        LRANGE lista 0 -1 # obtiene todos los elementos
+                                    </div>
+                                </div>
+                              
+                            </div>
+                            <div class="mt-4 bg-gray-900 p-3 rounded text-sm">
+                                <p class="font-bold text-pink-400">Casos de uso:</p>
+                                <p>Colas de mensajes, feeds sociales, historial de acciones recientes, colas de trabajo...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sets Card -->
+                    <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                        <div class="bg-pink-900 bg-opacity-30 px-4 py-3">
+                            <h3 class="text-xl font-bold text-pink-500">Conjuntos (Sets)</h3>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1">
+                                    <ul class="space-y-1 mb-4">
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Los conjuntos son colecciones desordenadas de cadenas únicas.</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Operaciones de conjuntos: unión, intersección, diferencia.</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Útiles para eliminar duplicados y relaciones muchos a muchos.</span>
+                                        </li>
+                                    </ul>
+                                    <div class="code-block text-sm text-green-300">
+                                        # Ejemplos de uso<br>
+                                        SADD amigos "Ana" "Luis" "Carlos"<br>
+                                        SISMEMBER amigos "Ana" # verifica pertenencia<br>
+                                        SCARD amigos # cuenta elementos<br>
+                                        SINTER set1 set2 # intersección de conjuntos
+                                    </div>
+                                </div>
+                         
+                            </div>
+                            <div class="mt-4 bg-gray-900 p-3 rounded text-sm">
+                                <p class="font-bold text-pink-400">Casos de uso:</p>
+                                <p>Etiquetas, seguimiento de relaciones, IP únicas, eliminación de duplicados...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hashes Card -->
+                    <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                        <div class="bg-pink-900 bg-opacity-30 px-4 py-3">
+                            <h3 class="text-xl font-bold text-pink-500">Hashes</h3>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1">
+                                    <ul class="space-y-1 mb-4">
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Los hashes son pares clave-valor dentro de una sola clave de Redis.</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Perfectos para representar objetos y documentos.</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Más eficientes que almacenar cada campo como una clave separada.</span>
+                                        </li>
+                                    </ul>
+                                    <div class="code-block text-sm text-green-300">
+                                        # Ejemplos de uso<br>
+                                        HSET usuario:1 nombre "Juan" edad 28 ciudad "Madrid"<br>
+                                        HGET usuario:1 nombre<br>
+                                        HINCRBY usuario:1 visitas 1<br>
+                                        HGETALL usuario:1 # obtiene todos los campos y valores
+                                    </div>
+                                </div>
+                        
+                            </div>
+                            <div class="mt-4 bg-gray-900 p-3 rounded text-sm">
+                                <p class="font-bold text-pink-400">Casos de uso:</p>
+                                <p>Perfiles de usuario, configuraciones, datos de sesión, carrito de compras...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sorted Sets Card -->
+                    <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                        <div class="bg-pink-900 bg-opacity-30 px-4 py-3">
+                            <h3 class="text-xl font-bold text-pink-500">Conjuntos Ordenados (Sorted Sets)</h3>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1">
+                                    <ul class="space-y-1 mb-4">
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Conjuntos donde cada elemento tiene una puntuación (score).</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Los elementos se ordenan automáticamente por su puntuación.</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <i class="fas fa-angle-right text-green-400 mt-1 mr-2"></i>
+                                            <span>Consultas eficientes por rango de puntuación o posición.</span>
+                                        </li>
+                                    </ul>
+                                    <div class="code-block text-sm text-green-300">
+                                        # Ejemplos de uso<br>
+                                        ZADD puntuaciones 90 "Ana" 85 "Luis" 95 "Carlos"<br>
+                                        ZRANGE puntuaciones 0 -1 # todos ordenados<br>
+                                        ZREVRANGE puntuaciones 0 2 # 3 mejores<br>
+                                        ZRANGEBYSCORE puntuaciones 80 100 # por rango
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            <div class="mt-4 bg-gray-900 p-3 rounded text-sm">
+                                <p class="font-bold text-pink-400">Casos de uso:</p>
+                                <p>Tablas de clasificación, accesos recientes, analíticas por tiempo, priorización...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Casos de Uso Section -->
+            <div id="casos" class="tab-content hidden">
+                <h2 class="text-3xl font-bold text-green-400 mb-6">Casos de Uso de Redis</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                    <!-- Caché Card -->
+                    <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-bolt text-3xl text-pink-500 mr-4"></i>
+                            <h3 class="text-xl font-bold text-pink-500">Caché</h3>
+                        </div>
+                        <p class="mb-4">Redis es ampliamente utilizado como capa de caché para mejorar el rendimiento de aplicaciones, reduciendo la latencia de acceso a datos y la carga en la base de datos principal.</p>
+                  
+                        <div class="bg-gray-900 p-4 rounded-lg">
+                            <p class="font-bold text-green-400 mb-2">Beneficios:</p>
+                            <ul class="space-y-1">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Velocidad de respuesta: acceso en memoria &lt;1ms</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Reducción de carga en bases de datos</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Políticas de expiración automáticas</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Algoritmos LRU/LFU para gestión de memoria</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Session Management Card -->
+                    <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-user-circle text-3xl text-pink-500 mr-4"></i>
+                            <h3 class="text-xl font-bold text-pink-500">Gestión de Sesiones</h3>
+                        </div>
+                        <p class="mb-4">Redis es ideal para almacenar datos de sesión de usuario en aplicaciones web, permitiendo acceso rápido y consistente a través de múltiples servidores.</p>
+                      
+                        <div class="bg-gray-900 p-4 rounded-lg">
+                            <p class="font-bold text-green-400 mb-2">Ventajas:</p>
+                            <ul class="space-y-1">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Centralización de datos de sesión</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Escalabilidad horizontal entre servidores</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Tiempos de expiración configurables</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Alta disponibilidad para sesiones críticas</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Analytics Card -->
+                    <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-chart-line text-3xl text-pink-500 mr-4"></i>
+                            <h3 class="text-xl font-bold text-pink-500">Análisis en Tiempo Real</h3>
+                        </div>
+                        <p class="mb-4">La naturaleza en memoria de Redis lo hace ideal para analíticas y paneles en tiempo real, permitiendo procesar grandes volúmenes de datos con respuesta inmediata.</p>
+                      
+                        <div class="bg-gray-900 p-4 rounded-lg">
+                            <p class="font-bold text-green-400 mb-2">Aplicaciones:</p>
+                            <ul class="space-y-1">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Contadores de eventos en tiempo real</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Tablas de clasificación y trending</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Seguimiento de comportamiento de usuario</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Analítica de tráfico y métricas</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Message Broker Card -->
+                    <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-comments text-3xl text-pink-500 mr-4"></i>
+                            <h3 class="text-xl font-bold text-pink-500">Mensajería Pub/Sub</h3>
+                        </div>
+                        <p class="mb-4">Redis proporciona un sistema de mensajería Publicación/Suscripción ligero y de alto rendimiento para comunicación entre componentes de aplicaciones.</p>
+                
+                        <div class="bg-gray-900 p-4 rounded-lg">
+                            <p class="font-bold text-green-400 mb-2">Características:</p>
+                            <ul class="space-y-1">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Comunicación en tiempo real</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Modelo sencillo de publicadores y suscriptores</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Distribución de mensajes a múltiples consumidores</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                    <span>Alto rendimiento y baja latencia</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Persistencia Section -->
+            <div id="persistencia" class="tab-content hidden">
+                <h2 class="text-3xl font-bold text-green-400 mb-6">Persistencia en Redis</h2>
+                
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+                    <p class="mb-4">A pesar de ser una base de datos en memoria, Redis ofrece mecanismos de persistencia para garantizar la durabilidad de los datos.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-gray-900 p-5 rounded-lg">
+                            <h3 class="text-xl font-bold text-pink-500 mb-3">
+                                <i class="fas fa-save mr-2"></i>RDB (Redis Database)
+                            </h3>
+                            <p class="mb-3 text-gray-300">Persistencia mediante snapshots puntuales de la base de datos completa.</p>
+                            <ul class="space-y-3 mb-4">
+                                <li class="flex items-start">
+                                    <i class="fas fa-plus-circle text-green-400 mt-1 mr-2"></i>
+                                    <span>Crea instantáneas en momentos específicos (configurables)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-plus-circle text-green-400 mt-1 mr-2"></i>
+                                    <span>Los archivos RDB son compactos y optimizados</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-plus-circle text-green-400 mt-1 mr-2"></i>
+                                    <span>Ideal para backups y recuperación ante desastres</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-plus-circle text-green-400 mt-1 mr-2"></i>
+                                    <span>Menor sobrecarga de I/O durante operación normal</span>
+                                </li>
+                            </ul>
+                            <div class="code-block text-sm text-green-300">
+                                # Configuración en redis.conf<br>
+                                save 900 1    # cada 15min si ≥1 cambio<br>
+                                save 300 10   # cada 5min si ≥10 cambios<br>
+                                save 60 10000 # cada 1min si ≥10000 cambios<br><br>
+                                # Comando manual<br>
+                                BGSAVE  # inicia snapshot en background
+                            </div>
+                        </div>
+                        <div class="bg-gray-900 p-5 rounded-lg">
+                            <h3 class="text-xl font-bold text-pink-500 mb-3">
+                                <i class="fas fa-file-alt mr-2"></i>AOF (Append-Only File)
+                            </h3>
+                            <p class="mb-3 text-gray-300">Persistencia mediante registro de todas las operaciones de escritura.</p>
+                            <ul class="space-y-3 mb-4">
+                                <li class="flex items-start">
+                                    <i class="fas fa-plus-circle text-green-400 mt-1 mr-2"></i>
+                                    <span>Registra cada operación de escritura en un archivo</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-plus-circle text-green-400 mt-1 mr-2"></i>
+                                    <span>Mayor durabilidad (menor pérdida de datos)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-plus-circle text-green-400 mt-1 mr-2"></i>
+                                    <span>Diferentes niveles de sincronización (fsync)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-plus-circle text-green-400 mt-1 mr-2"></i>
+                                    <span>La compactación automática evita crecimiento excesivo</span>
+                                </li>
+                            </ul>
+                            <div class="code-block text-sm text-green-300">
+                                # Configuración en redis.conf<br>
+                                appendonly yes<br>
+                                appendfsync everysec  # opciones: always, everysec, no<br><br>
+                                # Reescritura del AOF<br>
+                                BGREWRITEAOF  # compacta el AOF en background
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                    <div class="bg-pink-900 bg-opacity-30 px-6 py-4">
+                        <h3 class="text-xl font-bold text-pink-500">Comparación de estrategias de persistencia</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-gray-900 rounded-lg">
+                                <thead>
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">Característica</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">RDB</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">AOF</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-700">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-pink-400">Durabilidad</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Menor (intervalos entre snapshots)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Mayor (registro continuo)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-pink-400">Tamaño de archivo</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Compacto</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Más grande</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-pink-400">Impacto en rendimiento</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Menor en general, picos al hacer snapshot</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Constante pero ligero, mayor con fsync=always</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-pink-400">Tiempo de recuperación</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Rápido (carga directa)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Más lento (replay de operaciones)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-pink-400">Resistencia a corrupción</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Vulnerable (formato binario)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Mayor (operaciones secuenciales)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="mt-4 text-center text-sm text-gray-400 italic">
+                            Recomendación: Usar ambas estrategias combinadas para máxima seguridad y rendimiento
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Replicación Section -->
+            <div id="replicacion" class="tab-content hidden">
+                <h2 class="text-3xl font-bold text-green-400 mb-6">Replicación y Alta Disponibilidad</h2>
+                
+                <!-- Replicación Maestro-Esclavo -->
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-copy text-3xl text-pink-500 mr-4"></i>
+                        <h3 class="text-xl font-bold text-pink-500">Replicación Maestro-Réplica</h3>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <p class="mb-4">Redis implementa un sistema de replicación asíncrona donde los nodos réplica mantienen una copia exacta de los datos del nodo maestro.</p>
+                            <div class="mb-4">
+                                <h4 class="text-lg font-bold text-green-400 mb-2">Características</h4>
+                                <ul class="space-y-1">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                        <span>Configuración simple y robusta</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                        <span>Escalabilidad horizontal de lecturas</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                        <span>Sincronización automática después de desconexión</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                        <span>Transferencia parcial para reconexiones rápidas</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="code-block text-sm text-green-300">
+                                # En nodo réplica:<br>
+                                replicaof 192.168.1.10 6379<br><br>
+                                # O en tiempo de ejecución:<br>
+                                REPLICAOF 192.168.1.10 6379<br>
+                                REPLICAOF NO ONE  # promueve a maestro
+                            </div>
+                        </div>
+                        <div class="flex flex-col justify-center">
+                    
+                            <div class="bg-gray-900 p-4 rounded-lg">
+                                <p class="font-bold text-green-400 mb-2">Flujo de replicación:</p>
+                                <ol class="space-y-1 list-decimal list-inside text-sm">
+                                    <li>Réplica conecta al maestro</li>
+                                    <li>Maestro inicia sincronización completa (o parcial)</li>
+                                    <li>Transferencia de RDB del estado actual</li>
+                                    <li>Réplica carga datos y actualiza</li>
+                                    <li>Propagación continua de comandos</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Redis Sentinel -->
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-shield-alt text-3xl text-pink-500 mr-4"></i>
+                        <h3 class="text-xl font-bold text-pink-500">Redis Sentinel</h3>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <p class="mb-4">Redis Sentinel proporciona alta disponibilidad para Redis a través de monitorización automatizada, notificación y conmutación por error automática.</p>
+                            <div class="mb-4">
+                                <h4 class="text-lg font-bold text-green-400 mb-2">Funciones principales</h4>
+                                <ul class="space-y-1">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                        <span>Monitorización: verifica que maestro y réplicas funcionan correctamente</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                        <span>Notificación: alerta a administradores o sistemas sobre problemas</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                        <span>Failover: promoción automática de réplica a maestro cuando falla el maestro</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                        <span>Configuración cliente: actúa como servicio de descubrimiento</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="code-block text-sm text-green-300">
+                                # sentinel.conf<br>
+                                sentinel monitor mymaster 192.168.1.10 6379 2<br>
+                                sentinel down-after-milliseconds mymaster 5000<br>
+                                sentinel failover-timeout mymaster 60000<br>
+                                sentinel parallel-syncs mymaster 1
+                            </div>
+                        </div>
+                        <div class="flex flex-col justify-center">
+                        
+                            <div class="bg-gray-900 p-4 rounded-lg">
+                                <p class="font-bold text-green-400 mb-2">Funcionamiento del quórum:</p>
+                                <p class="text-sm">Sentinel utiliza algoritmos de consenso para detectar fallos y evitar falsos positivos. El valor del quórum (2 en el ejemplo) determina cuántos sentinels deben estar de acuerdo para iniciar una conmutación por error.</p>
+                                <p class="text-sm mt-2">Recomendación: al menos 3 instancias de Sentinel en diferentes hosts para tolerancia a fallos.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cluster Section -->
+            <div id="cluster" class="tab-content hidden">
+                <h2 class="text-3xl font-bold text-green-400 mb-6">Redis Cluster</h2>
+                
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-pink-500 mb-4">Distribución de datos horizontal</h3>
+                            <p class="mb-4">Redis Cluster permite distribuir automáticamente los datos entre múltiples nodos Redis, ofreciendo escalabilidad horizontal y alta disponibilidad.</p>
+                            <div class="mb-4">
+                                <h4 class="text-lg font-bold text-green-400 mb-2">Características clave</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                        <span>Distribución automática en 16384 slots de hash</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                        <span>Conmutación por error automática entre nodos</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                        <span>Comunicación entre nodos mediante gossip protocol</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                        <span>Soporte para múltiples conexiones simultáneas</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-pink-400 mt-1 mr-2"></i>
+                                        <span>Escalabilidad hasta cientos o miles de nodos</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="flex flex-col justify-center">
+                            <img src="https://redis.io/images/redis-cluster.png" alt="Redis Cluster" class="rounded-lg shadow-lg mb-4">
+                            <div class="bg-gray-900 p-4 rounded-lg">
+                                <p class="font-bold text-green-400 mb-2">Cómo funciona el sharding:</p>
+                                <p class="text-sm">Las claves se asignan a un slot de hash mediante CRC16(key) % 16384. Cada nodo maestro es responsable de un subconjunto de estos slots. Los nodos replican entre sí información sobre la asignación de slots.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-pink-500 mb-4">Configuración de Cluster</h3>
+                        <div class="code-block text-sm text-green-300 mb-4">
+                            # redis.conf (para cada nodo)<br>
+                            port 7000<br>
+                            cluster-enabled yes<br>
+                            cluster-config-file nodes-7000.conf<br>
+                            cluster-node-timeout 5000<br>
+                            appendonly yes
+                        </div>
+                        <p class="text-sm mb-3">Para crear el cluster (en Redis 5.0+):</p>
+                        <div class="code-block text-sm text-green-300">
+                            redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \<br>
+                            127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 \<br>
+                            --cluster-replicas 1
+                        </div>
+                        <div class="mt-4 bg-pink-900 bg-opacity-30 p-3 rounded-lg">
+                            <p class="text-sm font-bold text-pink-500 mb-1">Buenas prácticas:</p>
+                            <ul class="text-xs space-y-1">
+                                <li>• Mínimo 3 nodos maestros para tolerancia a fallos</li>
+                                <li>• Un nodo réplica por cada maestro</li>
+                                <li>• Nodos en diferentes hosts/racks para máxima disponibilidad</li>
+                                <li>• Monitorizar el ancho de banda de red entre nodos</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-pink-500 mb-4">Limitaciones y consideraciones</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-2"></i>
+                                <div>
+                                    <p class="font-bold">Transacciones Multi-Key</p>
+                                    <p class="text-sm">Las operaciones multi-clave solo funcionan cuando todas las claves pertenecen al mismo slot de hash</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-2"></i>
+                                <div>
+                                    <p class="font-bold">Complejidad del sistema</p>
+                                    <p class="text-sm">Mayor complejidad operativa y de mantenimiento que Redis Standalone</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-2"></i>
+                                <div>
+                                    <p class="font-bold">Tamaño de red</p>
+                                    <p class="text-sm">El tráfico de gossip puede aumentar significativamente con muchos nodos</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-2"></i>
+                                <div>
+                                    <p class="font-bold">Redistribución de datos</p>
+                                    <p class="text-sm">Añadir/quitar nodos requiere redistribución de slots que consume recursos</p>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="mt-4 bg-green-900 bg-opacity-30 p-3 rounded-lg">
+                            <p class="text-sm">Redis Cluster es ideal cuando necesitas:</p>
+                            <p class="text-xs mt-2">• Escalar más allá de la capacidad de un solo nodo Redis<br>
+                            • Alta disponibilidad sin intervención manual<br>
+                            • Conjunto de datos distribuido con tolerancia a fallos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seguridad Section -->
+            <div id="seguridad" class="tab-content hidden">
+                <h2 class="text-3xl font-bold text-green-400 mb-6">Seguridad en Redis</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Autenticación -->
+                    <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                        <div class="bg-pink-900 bg-opacity-30 px-4 py-3">
+                            <h3 class="text-xl font-bold text-pink-500">Autenticación</h3>
+                        </div>
+                        <div class="p-5">
+                            <p class="mb-4">Redis proporciona un mecanismo simple de autenticación basado en contraseña para proteger el acceso a los datos.</p>
+                            <div class="code-block text-sm text-green-300 mb-4">
+                                # Configurar contraseña en redis.conf<br>
+                                requirepass "contraseña_fuerte_y_compleja"<br><br>
+                                # O en tiempo de ejecución<br>
+                                CONFIG SET requirepass "contraseña_fuerte_y_compleja"<br><br>
+                                # Autenticarse como cliente<br>
+                                AUTH "contraseña_fuerte_y_compleja"
+                            </div>
+                            <div class="bg-gray-900 p-3 rounded-lg text-sm">
+                                <p class="font-bold text-pink-400 mb-2">Buenas prácticas:</p>
+                                <ul class="space-y-1">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-shield-alt text-green-400 mt-1 mr-2"></i>
+                                        <span>Usar contraseñas largas y complejas (>20 caracteres)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-shield-alt text-green-400 mt-1 mr-2"></i>
+                                        <span>Rotar contraseñas regularmente</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-shield-alt text-green-400 mt-1 mr-2"></i>
+                                        <span>Usar variables de entorno en producción</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-shield-alt text-green-400 mt-1 mr-2"></i>
+                                        <span>Combinar con restricciones de red</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Control de Acceso -->
+                    <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                        <div class="bg-pink-900 bg-opacity-30 px-4 py-3">
+                            <h3 class="text-xl font-bold text-pink-500">Control de Acceso (ACL)</h3>
+                        </div>
+                        <div class="p-5">
+                            <p class="mb-4">A partir de Redis 6.0, se introdujo un sistema de Control de Acceso basado en usuarios (ACL) que permite un control más granular.</p>
+                            <div class="code-block text-sm text-green-300 mb-4">
+                                # Crear un usuario con acceso restringido<br>
+                                ACL SETUSER alice on >secret_pwd ~objects:* +@read +@hash -@all<br><br>
+                                # Explicación:<br>
+                                # "on" - usuario activo<br>
+                                # ">secret_pwd" - contraseña<br>
+                                # "~objects:*" - acceso solo a claves que empiezan con "objects:"<br>
+                                # "+@read" - permite comandos de lectura<br>
+                                # "+@hash" - permite comandos para trabajar con hashes<br>
+                                # "-@all" - deniega todos los demás comandos
+                            </div>
+                            <div class="bg-gray-900 p-3 rounded-lg text-sm">
+                                <p class="font-bold text-pink-400 mb-2">Ventajas del ACL:</p>
+                                <ul class="space-y-1">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-green-400 mt-1 mr-2"></i>
+                                        <span>Principio de mínimo privilegio</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-green-400 mt-1 mr-2"></i>
+                                        <span>Separación de responsabilidades</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-green-400 mt-1 mr-2"></i>
+                                        <span>Restricción por patrón de claves</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-green-400 mt-1 mr-2"></i>
+                                        <span>Auditoría y control detallado</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-8">
+                    <div class="bg-pink-900 bg-opacity-30 px-6 py-4">
+                        <h3 class="text-xl font-bold text-pink-500">Cifrado en tránsito (TLS)</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="mb-4">Redis 6.0+ soporta TLS nativo para cifrar la comunicación entre clientes y servidores, así como entre réplicas.</p>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-gray-900 p-4 rounded-lg">
+                                <h4 class="text-lg font-bold text-green-400 mb-2">Configuración del servidor</h4>
+                                <div class="code-block text-sm text-green-300">
+                                    # En redis.conf<br>
+                                    tls-port 6379<br>
+                                    tls-cert-file /path/to/redis.crt<br>
+                                    tls-key-file /path/to/redis.key<br>
+                                    tls-ca-cert-file /path/to/ca.crt<br>
+                                    tls-auth-clients yes<br>
+                                    tls-replication yes
+                                </div>
+                            </div>
+                            <div class="bg-gray-900 p-4 rounded-lg">
+                                <h4 class="text-lg font-bold text-green-400 mb-2">Conexión del cliente</h4>
+                                <div class="code-block text-sm text-green-300">
+                                    # Usando redis-cli<br>
+                                    redis-cli --tls \<br>
+                                    --cert /path/to/client.crt \<br>
+                                    --key /path/to/client.key \<br>
+                                    --cacert /path/to/ca.crt
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-pink-500 mb-4">Mejores prácticas de seguridad</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-lg font-bold text-green-400 mb-3">Red y aislamiento</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-start">
+                                    <i class="fas fa-shield-alt text-pink-400 mt-1 mr-2"></i>
+                                    <span>Usa bind para limitar interfaces de red</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-shield-alt text-pink-400 mt-1 mr-2"></i>
+                                    <span>Implementa Redis en redes privadas/VPC</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-shield-alt text-pink-400 mt-1 mr-2"></i>
+                                    <span>Configura firewalls y grupos de seguridad</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-shield-alt text-pink-400 mt-1 mr-2"></i>
+                                    <span>Usa proxies para proteger acceso directo</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-bold text-green-400 mb-3">Configuración protegida</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-start">
+                                    <i class="fas fa-shield-alt text-pink-400 mt-1 mr-2"></i>
+                                    <span>Deshabilita comandos peligrosos en producción</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-shield-alt text-pink-400 mt-1 mr-2"></i>
+                                    <span>Limita memoria máxima (maxmemory)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-shield-alt text-pink-400 mt-1 mr-2"></i>
+                                    <span>Establece límites de clientes (maxclients)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-shield-alt text-pink-400 mt-1 mr-2"></i>
+                                    <span>Monitoriza y audita regularmente</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="mt-6 bg-yellow-900 bg-opacity-30 p-4 rounded-lg">
+                        <p class="text-yellow-300 font-bold mb-2">⚠️ Advertencia:</p>
+                        <p class="text-sm">Nunca exponga instancias de Redis directamente a Internet o redes públicas sin la debida protección. Redis fue diseñado para entornos de confianza y debería utilizarse siempre detrás de firewalls y con autenticación adecuada.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 py-4 mt-10 fixed bottom-0">
+        <div class="container mx-auto px-4 text-center text-gray-400 text-sm">
+            <p>Redis Dashboard - Base de datos en memoria, caché y broker de mensajes</p>
+        </div>
+    </footer>
+
+    <script>
+        // Tab switching functionality
+        function changeTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            // Update tab button styles
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-pink-500', 'border-b-2', 'border-pink-500');
+                btn.classList.add('text-gray-400', 'hover:text-pink-400');
+            });
+            
+            // Style the active tab
+            document.getElementById('tab-' + tabId).classList.add('text-pink-500', 'border-b-2', 'border-pink-500');
+            document.getElementById('tab-' + tabId).classList.remove('text-gray-400', 'hover:text-pink-400');
+            
+            // Add animation to elements
+            const elements = document.querySelectorAll(`#${tabId} > div`);
+            elements.forEach((el, index) => {
+                el.classList.add('animate-fadeIn');
+                el.style.animationDelay = `${index * 0.1}s`;
+                
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    el.classList.remove('animate-fadeIn');
+                }, 1000 + (index * 100));
+            });
+        }
+        
+        // Initialize first tab
+        document.addEventListener('DOMContentLoaded', function() {
+            changeTab('intro');
+        });
+    </script>
+</body>
+</html>
